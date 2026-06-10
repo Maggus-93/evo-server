@@ -36,17 +36,48 @@ def get_db():
     conn.commit()
     return conn
 
-@app.route('/')
-def index():
-    return 'OK', 200
 # ═══════════════════════════════════════════════════
 #  ROUTES
 # ═══════════════════════════════════════════════════
+
+@app.route("/")
+def index():
+    return jsonify({"status": "ok"}), 200
+
+@app.route("/ping")
+def ping():
+    return "pong", 200
 
 @app.route("/health")
 def health():
     return jsonify({"status": "ok", "time": datetime.now().isoformat()})
 
+@app.route("/addkey", methods=["POST"])
+def addkey():
+    data = request.get_json() or {}
+    if data.get("secret") != "EVO_SECRET_2024":
+        return jsonify({"success": False, "msg": "Unauthorized"}), 403
+
+    key          = data.get("key", "").strip().upper()
+    product      = data.get("product", "")
+    discord_id   = data.get("discord_id", "")
+    discord_name = data.get("discord_name", "")
+
+    if not key or not product:
+        return jsonify({"success": False, "msg": "Fehlende Felder"}), 400
+
+    conn = get_db()
+    try:
+        conn.execute(
+            "INSERT INTO keys (key, product, discord_id, discord_name) VALUES (?,?,?,?)",
+            (key, product, discord_id, discord_name)
+        )
+        conn.commit()
+        return jsonify({"success": True})
+    except sqlite3.IntegrityError:
+        return jsonify({"success": False, "msg": "Key existiert bereits"})
+    finally:
+        conn.close()
 
 @app.route("/verify", methods=["POST"])
 def verify():
@@ -54,7 +85,7 @@ def verify():
     key     = data.get("key",     "").strip().upper()
     pc_name = data.get("pc_name", "Unbekannt")
     hwid    = data.get("hwid",    "Unbekannt")
-    product = data.get("product", "op")          # welches Programm fragt an
+    product = data.get("product", "op")
 
     ip = (
         request.headers.get("CF-Connecting-IP") or
@@ -71,24 +102,20 @@ def verify():
     c.execute("SELECT * FROM keys WHERE key=?", (key,))
     row = c.fetchone()
 
-    # ── Key existiert nicht ──────────────────────────
     if not row:
         conn.close()
         return jsonify({"valid": False, "msg": "Ungültiger Key — bitte nochmal prüfen."})
 
-    # ── Key gehört zum falschen Produkt ──────────────
     if row["product"] and row["product"] != product:
         conn.close()
-        return jsonify({"valid": False, "msg": f"Dieser Key ist nicht für dieses Produkt gültig."})
+        return jsonify({"valid": False, "msg": "Dieser Key ist nicht für dieses Produkt gültig."})
 
-    # ── Key bereits auf anderem PC aktiviert ─────────
     if row["used"] == 1 and row["used_by_hwid"] and row["used_by_hwid"] != hwid:
         conn.close()
         return jsonify({"valid": False, "msg": "Key ist bereits auf einem anderen PC aktiviert!"})
 
     event_type = "ERSTAKTIVIERUNG" if row["used"] == 0 else "LOGIN"
 
-    # ── Erstaktivierung: in DB eintragen ─────────────
     if row["used"] == 0:
         c.execute("""
             UPDATE keys
@@ -109,6 +136,57 @@ def verify():
     return jsonify({"valid": True, "msg": "Aktivierung erfolgreich!"})
 
 
+@app.route("/keyinfo/<key>")
+def keyinfo(key):
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT * FROM keys WHERE key=?", (key.strip().upper(),))
+    row = c.fetchone()
+    conn.close()
+    if not row:
+        return jsonify({"found": False})
+    return jsonify({"found": True, "key": dict(row)})
+
+
+@app.route("/revokekey", methods=["POST"])
+def revokekey():
+    data = request.get_json() or {}
+    if data.get("secret") != "EVO_SECRET_2024":
+        return jsonify({"success": False}), 403
+
+    key = data.get("key", "").strip().upper()
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("SELECT key FROM keys WHERE key=?", (key,))
+    if not c.fetchone():
+        conn.close()
+        return jsonify({"success": False})
+
+    c.execute("""
+        UPDATE keys SET used=0, used_by_ip=NULL,
+        used_by_pcname=NULL, used_by_hwid=NULL, used_at=NULL
+        WHERE key=?
+    """, (key,))
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True})
+
+
+@app.route("/stats")
+def stats():
+    conn = get_db()
+    c = conn.cursor()
+    result = {}
+    for prod_id in ["op", "fps"]:
+        c.execute("SELECT COUNT(*) FROM keys WHERE product=?", (prod_id,))
+        total = c.fetchone()[0]
+        c.execute("SELECT COUNT(*) FROM keys WHERE product=? AND used=1", (prod_id,))
+        used = c.fetchone()[0]
+        result[prod_id] = {"total": total, "used": used}
+    conn.close()
+    return jsonify(result)
+
+
 @app.route("/download/<path:filename>")
 def download(filename):
     return send_from_directory(DOWNLOADS_DIR, filename)
@@ -127,12 +205,12 @@ def _discord_notify(key, discord_name, discord_id, ip, pc_name, time, event_type
         "title":  f"{emoji} {event_type} — {prod_name}",
         "color":  color,
         "fields": [
-            {"name": "🔑 Key",        "value": f"`{key}`",                          "inline": False},
-            {"name": "📦 Produkt",    "value": prod_name,                           "inline": True},
-            {"name": "👤 Discord",    "value": f"{discord_name} (<@{discord_id}>)", "inline": True},
-            {"name": "🖥️ PC-Name",    "value": f"`{pc_name}`",                      "inline": True},
-            {"name": "🌐 IP",         "value": f"`{ip}`",                           "inline": True},
-            {"name": "🕒 Zeit",       "value": time,                                "inline": False},
+            {"name": "🔑 Key",      "value": f"`{key}`",                          "inline": False},
+            {"name": "📦 Produkt",  "value": prod_name,                           "inline": True},
+            {"name": "👤 Discord",  "value": f"{discord_name} (<@{discord_id}>)", "inline": True},
+            {"name": "🖥️ PC-Name",  "value": f"`{pc_name}`",                      "inline": True},
+            {"name": "🌐 IP",       "value": f"`{ip}`",                           "inline": True},
+            {"name": "🕒 Zeit",     "value": time,                                "inline": False},
         ],
         "footer": {"text": "EVO System"}
     }
