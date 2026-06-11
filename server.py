@@ -63,7 +63,7 @@ def products():
             {
                 "name":     "PC Optimizer",
                 "desc":     "Optimiert deinen PC für maximale Performance.",
-                "img":      "https://i.imgur.com/IL8MCP0.png",
+                "img":      "https://raw.githubusercontent.com/Maggus-93/evo-server/main/myoptimizer.png",
                 "file_url": "https://drive.google.com/file/d/1csjNprYTRFb4Qku9Em-dwq7UXqAjk32K/view?usp=sharing",
                 "filename": "optimizer.exe"
             }
