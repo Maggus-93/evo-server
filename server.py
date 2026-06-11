@@ -52,6 +52,27 @@ def ping():
 def health():
     return jsonify({"status": "ok", "time": datetime.now().isoformat()})
 
+@app.route("/products")
+def products():
+    return jsonify({
+        "products": [
+            {
+                "name":     "PC Optimizer",
+                "desc":     "Optimiert deinen PC für maximale Performance.",
+                "img":      "https://cdn.discordapp.com/attachments/1325958482675109929/1513949474236530728/Gemini_Generated_Image_y8zazpy8zazpy8za-removebg-preview.png",
+                "file_url": "https://evo-server-eegx.onrender.com/download/optimizer.exe",
+                "filename": "optimizer.exe"
+            },
+            {
+                "name":     "FPS Booster",
+                "desc":     "Maximiert deine FPS in allen Spielen.",
+                "img":      "https://cdn.discordapp.com/attachments/1325958482675109929/1513949474236530728/Gemini_Generated_Image_y8zazpy8zazpy8za-removebg-preview.png",
+                "file_url": "https://evo-server-eegx.onrender.com/download/fps_booster.exe",
+                "filename": "fps_booster.exe"
+            }
+        ]
+    })
+
 @app.route("/addkey", methods=["POST"])
 def addkey():
     data = request.get_json() or {}
