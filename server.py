@@ -3,6 +3,10 @@ import sqlite3
 import requests
 from datetime import datetime
 import os
+import time
+import threading
+
+
 
 app = Flask(__name__)
 
@@ -59,7 +63,7 @@ def products():
             {
                 "name":     "PC Optimizer",
                 "desc":     "Optimiert deinen PC für maximale Performance.",
-                "img":      "https://cdn.discordapp.com/attachments/1326230398686203924/1513972063818354908/746953.jpg?ex=6a2ba61c&is=6a2a549c&hm=c17d6e9082483566bc84af220655722bba194ae24b1bd62319a160aecfbabc35&",
+                "img":      "https://i.imgur.com/IL8MCP0.png",
                 "file_url": "https://drive.google.com/file/d/1csjNprYTRFb4Qku9Em-dwq7UXqAjk32K/view?usp=sharing",
                 "filename": "optimizer.exe"
             }
@@ -233,7 +237,15 @@ def _discord_notify(key, discord_name, discord_id, ip, pc_name, time, event_type
     except Exception:
         pass
 
+def _keep_alive():
+    while True:
+        try:
+            requests.get("https://evo-server-eegx.onrender.com/ping", timeout=5)
+        except:
+            pass
+        time.sleep(240)  # alle 4 Minuten
 
+threading.Thread(target=_keep_alive, daemon=True).start()
 # ═══════════════════════════════════════════════════
 #  START
 # ═══════════════════════════════════════════════════
