@@ -59,16 +59,9 @@ def products():
             {
                 "name":     "PC Optimizer",
                 "desc":     "Optimiert deinen PC für maximale Performance.",
-                "img":      "https://cdn.discordapp.com/attachments/1325958482675109929/1513949474236530728/Gemini_Generated_Image_y8zazpy8zazpy8za-removebg-preview.png",
-                "file_url": "https://evo-server-eegx.onrender.com/download/optimizer.exe",
+                "img":      "https://cdn.discordapp.com/attachments/1326230398686203924/1513972063818354908/746953.jpg?ex=6a2ba61c&is=6a2a549c&hm=c17d6e9082483566bc84af220655722bba194ae24b1bd62319a160aecfbabc35&",
+                "file_url": "https://drive.google.com/file/d/1csjNprYTRFb4Qku9Em-dwq7UXqAjk32K/view?usp=sharing",
                 "filename": "optimizer.exe"
-            },
-            {
-                "name":     "FPS Booster",
-                "desc":     "Maximiert deine FPS in allen Spielen.",
-                "img":      "https://cdn.discordapp.com/attachments/1325958482675109929/1513949474236530728/Gemini_Generated_Image_y8zazpy8zazpy8za-removebg-preview.png",
-                "file_url": "https://evo-server-eegx.onrender.com/download/fps_booster.exe",
-                "filename": "fps_booster.exe"
             }
         ]
     })
