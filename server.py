@@ -6,8 +6,6 @@ import os
 import time
 import threading
 
-
-
 app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════
@@ -63,9 +61,9 @@ def products():
             {
                 "name":     "PC Optimizer",
                 "desc":     "Optimiert deinen PC für maximale Performance.",
-                "img":      "https://raw.githubusercontent.com/Maggus-93/evo-server/main/myoptimizer.png",
-                "file_url": "https://drive.google.com/file/d/1csjNprYTRFb4Qku9Em-dwq7UXqAjk32K/view?usp=sharing",
-                "filename": "optimizer.exe"
+                "img":      "https://i.imgur.com/IL8MCP0.png",
+                "file_url": "https://drive.google.com/file/d/1csjNprYTRFb4Qku9Em-dwq7UXqAjk32K/view?usp=sharing"
+                # "filename" wurde entfernt, weil es nicht mehr benötigt wird
             }
         ]
     })
@@ -153,7 +151,6 @@ def verify():
 
     return jsonify({"valid": True, "msg": "Aktivierung erfolgreich!"})
 
-
 @app.route("/keyinfo/<key>")
 def keyinfo(key):
     conn = get_db()
@@ -164,7 +161,6 @@ def keyinfo(key):
     if not row:
         return jsonify({"found": False})
     return jsonify({"found": True, "key": dict(row)})
-
 
 @app.route("/revokekey", methods=["POST"])
 def revokekey():
@@ -189,7 +185,6 @@ def revokekey():
     conn.close()
     return jsonify({"success": True})
 
-
 @app.route("/stats")
 def stats():
     conn = get_db()
@@ -203,12 +198,6 @@ def stats():
         result[prod_id] = {"total": total, "used": used}
     conn.close()
     return jsonify(result)
-
-
-@app.route("/download/<path:filename>")
-def download(filename):
-    return send_from_directory(DOWNLOADS_DIR, filename)
-
 
 # ═══════════════════════════════════════════════════
 #  DISCORD WEBHOOK
@@ -243,9 +232,10 @@ def _keep_alive():
             requests.get("https://evo-server-eegx.onrender.com/ping", timeout=5)
         except:
             pass
-        time.sleep(240)  # alle 4 Minuten
+        time.sleep(240)
 
 threading.Thread(target=_keep_alive, daemon=True).start()
+
 # ═══════════════════════════════════════════════════
 #  START
 # ═══════════════════════════════════════════════════
