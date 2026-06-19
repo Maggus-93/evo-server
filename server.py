@@ -6,8 +6,6 @@ import os
 import time
 import threading
 
-
-
 app = Flask(__name__)
 
 # ═══════════════════════════════════════════════════
@@ -46,7 +44,73 @@ def get_db():
 
 @app.route("/")
 def index():
-    return jsonify({"status": "ok"}), 200
+    # ─── Diese HTML-Seite wird angezeigt ───
+    html = """
+    <!DOCTYPE html>
+    <html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>EVO Produkte</title>
+        <style>
+            body { font-family: Arial, sans-serif; background: #1a1a2e; color: #fff; padding: 20px; }
+            .product { background: #16213e; border-radius: 10px; padding: 20px; margin: 20px 0; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+            .product img { width: 80px; height: 80px; border-radius: 10px; }
+            .product-info { flex: 1; }
+            .product-info h2 { margin: 0; }
+            .product-info p { color: #aaa; }
+            .btn { background: #4CAF50; border: none; color: white; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; }
+            .btn:hover { background: #45a049; }
+        </style>
+    </head>
+    <body>
+        <h1>📦 Meine Produkte</h1>
+        <div id="product-list"></div>
+
+        <script>
+            async function loadProducts() {
+                try {
+                    const response = await fetch('/products');
+                    const data = await response.json();
+                    const container = document.getElementById('product-list');
+                    container.innerHTML = '';
+
+                    data.products.forEach(product => {
+                        const div = document.createElement('div');
+                        div.className = 'product';
+
+                        const img = document.createElement('img');
+                        img.src = product.img;
+                        img.alt = product.name;
+
+                        const info = document.createElement('div');
+                        info.className = 'product-info';
+                        info.innerHTML = `<h2>${product.name}</h2><p>${product.desc}</p>`;
+
+                        const btn = document.createElement('button');
+                        btn.className = 'btn';
+                        btn.textContent = '📥 Auf Google Drive öffnen';
+                        // ✅ Hier: Öffnet die Google‑Drive‑Seite im neuen Tab – KEIN Download!
+                        btn.addEventListener('click', () => {
+                            window.open(product.file_url, '_blank');
+                        });
+
+                        div.appendChild(img);
+                        div.appendChild(info);
+                        div.appendChild(btn);
+                        container.appendChild(div);
+                    });
+                } catch (error) {
+                    console.error('Fehler:', error);
+                    document.getElementById('product-list').innerHTML = '<p>⚠️ Produkte konnten nicht geladen werden.</p>';
+                }
+            }
+            document.addEventListener('DOMContentLoaded', loadProducts);
+        </script>
+    </body>
+    </html>
+    """
+    return html, 200, {'Content-Type': 'text/html'}
 
 @app.route("/ping")
 def ping():
@@ -152,7 +216,6 @@ def verify():
 
     return jsonify({"valid": True, "msg": "Aktivierung erfolgreich!"})
 
-
 @app.route("/keyinfo/<key>")
 def keyinfo(key):
     conn = get_db()
@@ -163,7 +226,6 @@ def keyinfo(key):
     if not row:
         return jsonify({"found": False})
     return jsonify({"found": True, "key": dict(row)})
-
 
 @app.route("/revokekey", methods=["POST"])
 def revokekey():
@@ -188,7 +250,6 @@ def revokekey():
     conn.close()
     return jsonify({"success": True})
 
-
 @app.route("/stats")
 def stats():
     conn = get_db()
@@ -202,7 +263,6 @@ def stats():
         result[prod_id] = {"total": total, "used": used}
     conn.close()
     return jsonify(result)
-
 
 # ═══════════════════════════════════════════════════
 #  DISCORD WEBHOOK
@@ -237,9 +297,10 @@ def _keep_alive():
             requests.get("https://evo-server-eegx.onrender.com/ping", timeout=5)
         except:
             pass
-        time.sleep(240)  # alle 4 Minuten
+        time.sleep(240)
 
 threading.Thread(target=_keep_alive, daemon=True).start()
+
 # ═══════════════════════════════════════════════════
 #  START
 # ═══════════════════════════════════════════════════
