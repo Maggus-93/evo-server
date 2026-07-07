@@ -128,7 +128,7 @@ def products():
                 "name":     "PC Optimizer",
                 "desc":     "Optimiert deinen PC für maximale Performance.",
                 "img":      "https://raw.githubusercontent.com/Maggus-93/evo-server/main/myoptimizer.png",
-                "file_url": "https://drive.google.com/file/d/1zsjE_gMNORACWHr-t6celfzRvNpW0ELA/view?usp=sharing"
+                "file_url": "https://drive.google.com/file/d/1PDzKkZHkpcAqghoMQriF92FUWa4RcxlU/view?usp=sharing"
             },
             {
                 "name":     "Swiftfind",
