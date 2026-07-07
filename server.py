@@ -134,7 +134,7 @@ def products():
                 "name":     "Swiftfind",
                 "desc":     "Findet jede Datei auf deinem PC für maximale Übersicht.",
                 "img":      "https://raw.githubusercontent.com/Maggus-93/evo-server/main/Swiftfinds.png",
-                "file_url": "https://drive.google.com/file/d/1Cibnyc23Gm4_u6JAZ5n7b2m1UNuIBe7D/view?usp=sharing"
+                "file_url": "https://drive.google.com/file/d/1BCJASRSDevfy0sUhYXmNY15HHcF7nBSB/view?usp=sharing"
             }
         ]
     })
